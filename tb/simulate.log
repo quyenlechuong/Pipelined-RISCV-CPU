@@ -18,6 +18,21 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  7: SLTI  x8, x1, 0
  8: SLTIU x9, x1, 0
  9: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000018
+[TRACE] Cycle = 11 | WB PC = 0000001c
+[TRACE] Cycle = 12 | WB PC = 00000020
+[TRACE] Cycle = 13 | WB PC = 00000024
+[TRACE] Cycle = 14 | WB PC = 00000028
+[CYCLE] Total Cycles = 14
 [PASS]      ADDI : x1 = ffffffff (Expected ffffffff)
 [PASS]      SLLI : x2 = fffffff0 (Expected fffffff0)
 [PASS]      SRLI : x3 = 0fffffff (Expected 0fffffff)
@@ -46,6 +61,25 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
 11: OR   x12, x1, x2
 12: AND  x13, x1, x2
 13: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000018
+[TRACE] Cycle = 11 | WB PC = 0000001c
+[TRACE] Cycle = 12 | WB PC = 00000020
+[TRACE] Cycle = 13 | WB PC = 00000024
+[TRACE] Cycle = 14 | WB PC = 00000028
+[TRACE] Cycle = 15 | WB PC = 0000002c
+[TRACE] Cycle = 16 | WB PC = 00000030
+[TRACE] Cycle = 17 | WB PC = 00000034
+[TRACE] Cycle = 18 | WB PC = 00000038
+[CYCLE] Total Cycles = 18
 [PASS]      ADD  : x4 = 13 (Expected 13)
 [PASS]      SUB  : x5 = 7 (Expected 7)
 [PASS]      SLL  : x6 = 80 (Expected 80)
@@ -79,6 +113,34 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
 15: SKIP: ADDI x6, x0, 4
 16: ADDI x4, x0, 1
 17: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000000
+[TRACE] Cycle = 11 | WB PC = 00000000
+[TRACE] Cycle = 12 | WB PC = 0000001c
+[TRACE] Cycle = 13 | WB PC = 00000000
+[TRACE] Cycle = 14 | WB PC = 00000000
+[TRACE] Cycle = 15 | WB PC = 00000024
+[TRACE] Cycle = 16 | WB PC = 00000000
+[TRACE] Cycle = 17 | WB PC = 00000000
+[TRACE] Cycle = 18 | WB PC = 0000002c
+[TRACE] Cycle = 19 | WB PC = 00000000
+[TRACE] Cycle = 20 | WB PC = 00000000
+[TRACE] Cycle = 21 | WB PC = 00000034
+[TRACE] Cycle = 22 | WB PC = 00000000
+[TRACE] Cycle = 23 | WB PC = 00000000
+[TRACE] Cycle = 24 | WB PC = 0000003c
+[TRACE] Cycle = 25 | WB PC = 00000040
+[TRACE] Cycle = 26 | WB PC = 00000044
+[TRACE] Cycle = 27 | WB PC = 00000048
+[CYCLE] Total Cycles = 27
 [PASS]      LUI  : x1 = 12345000 (Expected 12345000)
 [PASS]     Branch: x4 = 1 (Expected 1)
 
@@ -98,6 +160,23 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  9: LH   x6, 0(x1)
 10: LHU  x7, 0(x1)
 11: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000018
+[TRACE] Cycle = 11 | WB PC = 0000001c
+[TRACE] Cycle = 12 | WB PC = 00000020
+[TRACE] Cycle = 13 | WB PC = 00000024
+[TRACE] Cycle = 14 | WB PC = 00000028
+[TRACE] Cycle = 15 | WB PC = 0000002c
+[TRACE] Cycle = 16 | WB PC = 00000030
+[CYCLE] Total Cycles = 16
 [PASS]      SW/LW: x3 = deadbeef (Expected deadbeef)
 [PASS]      LB   : x4 = ffffffef (Expected ffffffef)
 [PASS]      LBU  : x5 = 000000ef (Expected 000000ef)
@@ -118,6 +197,27 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  7: DIVU x8, x3, x1
  8: REMU x9, x3, x1
  9: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000018
+[TRACE] Cycle = 11 | WB PC = 0000001c
+[TRACE] Cycle = 12 | WB PC = 00000020
+[TRACE] Cycle = 13 | WB PC = 00000024
+[TRACE] Cycle = 14 | WB PC = 00000028
+[TRACE] Cycle = 15 | WB PC = 0000002c
+[TRACE] Cycle = 16 | WB PC = 00000030
+[TRACE] Cycle = 17 | WB PC = 00000034
+[TRACE] Cycle = 18 | WB PC = 00000038
+[TRACE] Cycle = 19 | WB PC = 0000003c
+[TRACE] Cycle = 20 | WB PC = 00000040
+[CYCLE] Total Cycles = 20
 [PASS]      MUL  : x4 = -100 (Expected -100)
 [PASS]      MULH : x5 = -1 (Expected -1)
 [PASS]      DIV  : x6 = -4 (Expected -4)
@@ -135,6 +235,18 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  3: LW   x3, 0(x1)
  4: ADD  x4, x3, x3
  5: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000000
+[TRACE] Cycle = 9 | WB PC = 00000010
+[TRACE] Cycle = 10 | WB PC = 00000014
+[TRACE] Cycle = 11 | WB PC = 00000018
+[CYCLE] Total Cycles = 11
 [PASS]    L2U_ADD: x4 = 110 (Expected 110)
 
 /**********************************/
@@ -149,6 +261,19 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  5: NOP
  6: ADD  x4, x3, x3
  7: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000010
+[TRACE] Cycle = 9 | WB PC = 00000014
+[TRACE] Cycle = 10 | WB PC = 00000018
+[TRACE] Cycle = 11 | WB PC = 0000001c
+[TRACE] Cycle = 12 | WB PC = 00000020
+[CYCLE] Total Cycles = 12
 [PASS]    FWD_EX : x2 = 10 (Expected 10)
 [PASS]    FWD_MEM: x3 = 20 (Expected 20)
 [PASS]    FWD_WB : x4 = 40 (Expected 40)
@@ -162,6 +287,17 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  2: ADDI  x3, x0, 99
  3: ADDI  x4, x0, 42
  4: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000000
+[TRACE] Cycle = 7 | WB PC = 00000000
+[TRACE] Cycle = 8 | WB PC = 0000000c
+[TRACE] Cycle = 9 | WB PC = 00000010
+[TRACE] Cycle = 10 | WB PC = 00000014
+[CYCLE] Total Cycles = 10
 [PASS]    JALR_RA: x2 = 8 (Expected 8)
 [PASS]    FLUSH  : x3 = 0 (Expected 0)
 [PASS]    TARGET : x4 = 42 (Expected 42)
@@ -173,11 +309,18 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  0: ADDI x0, x0, 100
  1: ADD  x1, x0, x0
  2: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[CYCLE] Total Cycles = 7
 [PASS]    ZERO_X1: x1 = 0 (Expected 0)
 
 /**********************************/
 /* PROGRAM 10: LOAD-TO-BRANCH     */
-/**********************************/
 [ASSEMBLY TRACE]
  0: ADDI x1, x0, 100
  1: ADDI x2, x0, 10
@@ -187,9 +330,24 @@ WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Proc
  5: ADDI x4, x0, 99
  6: ADDI x4, x0, 1
  7: ecall
+[TRACE] Cycle = 1 | WB PC = 00000000
+[TRACE] Cycle = 2 | WB PC = 00000000
+[TRACE] Cycle = 3 | WB PC = 00000000
+[TRACE] Cycle = 4 | WB PC = 00000000
+[TRACE] Cycle = 5 | WB PC = 00000004
+[TRACE] Cycle = 6 | WB PC = 00000008
+[TRACE] Cycle = 7 | WB PC = 0000000c
+[TRACE] Cycle = 8 | WB PC = 00000000
+[TRACE] Cycle = 9 | WB PC = 00000010
+[TRACE] Cycle = 10 | WB PC = 00000000
+[TRACE] Cycle = 11 | WB PC = 00000000
+[TRACE] Cycle = 12 | WB PC = 00000018
+[TRACE] Cycle = 13 | WB PC = 0000001c
+[TRACE] Cycle = 14 | WB PC = 00000020
+[CYCLE] Total Cycles = 14
 [PASS]    L2B_TGT: x4 = 1 (Expected 1)
 
 /**************************************************/
 /* ALL TESTS PASSED SUCCESSFULLY!                 */
 /**************************************************/
-$finish called at time : 1686 ns : File "C:/Users/lechuongquyen/Processor/Processor.srcs/sim_1/new/tb.v" Line 485
+$finish called at time : 1686 ns : File "C:/Users/lechuongquyen/Processor/Processor.srcs/sim_1/new/tb.v" Line 502

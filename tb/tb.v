@@ -33,6 +33,13 @@ module tb;
         forever #5 clk = ~clk;
     end
 
+    always @(posedge clk) begin
+        if (!rst) begin
+            #1;
+            $display("[TRACE] Cycle = %0d | WB PC = %h", dut.datapath.cycles_current, trace_writeback_pc);
+        end
+    end
+
     /******************************************/
     /* 4. HELPER TASK: DYNAMIC PROGRAM LOADER */
     /******************************************/
@@ -134,6 +141,7 @@ module tb;
         load_program(10);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
         
         check_result("ADDI ", 1, 32'hFFFFFFFF, 0); 
         check_result("SLLI ", 2, 32'hFFFFFFF0, 0);
@@ -185,6 +193,7 @@ module tb;
         load_program(14);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("ADD  ", 4, 13, 1);
         check_result("SUB  ", 5, 7, 1);
@@ -245,6 +254,7 @@ module tb;
         load_program(18);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("LUI  ", 1, 32'h12345000, 0);
         check_result("Branch", 4, 1, 1); 
@@ -285,6 +295,7 @@ module tb;
         load_program(12);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("SW/LW", 3, 32'hDEADBEEF, 0);
         check_result("LB   ", 4, 32'hFFFFFFEF, 0);
@@ -324,6 +335,7 @@ module tb;
         load_program(10);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("MUL  ", 4, -100, 1);
         check_result("MULH ", 5, -1, 1);
@@ -356,6 +368,7 @@ module tb;
         load_program(6);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("L2U_ADD", 4, 110, 1);
         
@@ -387,6 +400,7 @@ module tb;
         load_program(8);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("FWD_EX ", 2, 10, 1);
         check_result("FWD_MEM", 3, 20, 1);
@@ -414,6 +428,7 @@ module tb;
         load_program(5);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("JALR_RA", 2, 8, 1); 
         check_result("FLUSH  ", 3, 0, 1); 
@@ -437,6 +452,7 @@ module tb;
         load_program(3);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("ZERO_X1", 1, 0, 1); 
         
@@ -445,7 +461,7 @@ module tb;
         /**********************************/
         $display("\n/**********************************/");
         $display("/* PROGRAM 10: LOAD-TO-BRANCH     */");
-        $display("/**********************************/");
+        /**********************************/
         $display("[ASSEMBLY TRACE]");
         $display(" 0: ADDI x1, x0, 100");
         $display(" 1: ADDI x2, x0, 10");
@@ -468,6 +484,7 @@ module tb;
         load_program(8);
         rst = 1; #20; @(negedge clk) rst = 0;
         wait(halt); @(posedge clk); #1;
+        $display("[CYCLE] Total Cycles = %0d", dut.datapath.cycles_current);
 
         check_result("L2B_TGT", 4, 1, 1); 
 
