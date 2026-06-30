@@ -177,7 +177,7 @@ module ALU (
     wire is_sub = (opcode == `OPC_REG_REG && funct3 == 3'b000 && funct7 == 7'b0100000) || (opcode == `OPC_BRANCH);
     wire [31:0] cla_b = is_sub ? ~b : b;
     
-    // Khởi tạo module CLA thay vì dùng phép cộng trực tiếp
+    
     wire [31:0] cla_sum;
     wire cla_cout;
     
@@ -186,7 +186,7 @@ module ALU (
         .b(cla_b),
         .cin(is_sub),
         .sum(cla_sum),
-        .cout(cla_cout) // Có thể để trống hoặc bỏ đi nếu module của bạn không có cổng cout
+        .cout(cla_cout) 
     );
     
     // RV32M Divider Logic
