@@ -77,20 +77,48 @@ endmodule
 module Hazard_Detection (
     input [4:0] id_rs1,
     input [4:0] id_rs2,
+    input [4:0] id_rd,
+    input x_is_div,
     input ex_mem_read,
     input [4:0] ex_rd,
     input x_is_branch_taken,
+    input [4:0] div_rd_1, div_rd_2, div_rd_3, div_rd_4, div_rd_5, div_rd_6, div_rd_7, div_rd_8,
+    input div_v_1, div_v_2, div_v_3, div_v_4, div_v_5, div_v_6, div_v_7, div_v_8,
     output reg stall,
     output reg flush_if_id,
     output reg flush_id_ex
 );
     always @(*) begin
+        stall = 1'b0;
+
         // 1. Load-Use Hazard Detection
         if (ex_mem_read && (ex_rd != 0) && ((ex_rd == id_rs1) || (ex_rd == id_rs2))) begin
             stall = 1'b1;
-        end else begin
-            stall = 1'b0;
         end
+
+        if (id_rs1 != 0 && (
+            (x_is_div && ex_rd == id_rs1) ||
+            (div_v_1 && div_rd_1 == id_rs1) || (div_v_2 && div_rd_2 == id_rs1) ||
+            (div_v_3 && div_rd_3 == id_rs1) || (div_v_4 && div_rd_4 == id_rs1) ||
+            (div_v_5 && div_rd_5 == id_rs1) || (div_v_6 && div_rd_6 == id_rs1) ||
+            (div_v_7 && div_rd_7 == id_rs1) || (div_v_8 && div_rd_8 == id_rs1)
+        )) stall = 1'b1;
+
+        if (id_rs2 != 0 && (
+            (x_is_div && ex_rd == id_rs2) ||
+            (div_v_1 && div_rd_1 == id_rs2) || (div_v_2 && div_rd_2 == id_rs2) ||
+            (div_v_3 && div_rd_3 == id_rs2) || (div_v_4 && div_rd_4 == id_rs2) ||
+            (div_v_5 && div_rd_5 == id_rs2) || (div_v_6 && div_rd_6 == id_rs2) ||
+            (div_v_7 && div_rd_7 == id_rs2) || (div_v_8 && div_rd_8 == id_rs2)
+        )) stall = 1'b1;
+
+        if (id_rd != 0 && (
+            (x_is_div && ex_rd == id_rd) ||
+            (div_v_1 && div_rd_1 == id_rd) || (div_v_2 && div_rd_2 == id_rd) ||
+            (div_v_3 && div_rd_3 == id_rd) || (div_v_4 && div_rd_4 == id_rd) ||
+            (div_v_5 && div_rd_5 == id_rd) || (div_v_6 && div_rd_6 == id_rd) ||
+            (div_v_7 && div_rd_7 == id_rd) || (div_v_8 && div_rd_8 == id_rd)
+        )) stall = 1'b1;
 
         // 2. Control Hazard (Flush) Resolution
         flush_if_id = x_is_branch_taken;
@@ -144,14 +172,23 @@ module ALU (
     input [6:0] funct7,
     output reg [31:0] result,
     output reg branch_taken,
-    output reg div_stall
+    output reg [31:0] delayed_div_result
 );
     wire is_sub = (opcode == `OPC_REG_REG && funct3 == 3'b000 && funct7 == 7'b0100000) || (opcode == `OPC_BRANCH);
     wire [31:0] cla_b = is_sub ? ~b : b;
-    wire [31:0] cla_sum;
     
-    cla cla_dut (.a(a), .b(cla_b), .cin(is_sub), .sum(cla_sum));
-
+    // Khởi tạo module CLA thay vì dùng phép cộng trực tiếp
+    wire [31:0] cla_sum;
+    wire cla_cout;
+    
+    cla cla_instance (
+        .a(a),
+        .b(cla_b),
+        .cin(is_sub),
+        .sum(cla_sum),
+        .cout(cla_cout) // Có thể để trống hoặc bỏ đi nếu module của bạn không có cổng cout
+    );
+    
     // RV32M Divider Logic
     wire x_is_div = (opcode == `OPC_REG_REG) && (funct7 == 7'd1) && (funct3[2] == 1'b1);
     wire is_dividend_negative = ((funct3 == 3'b100) || (funct3 == 3'b110)) && a[31];
@@ -166,21 +203,56 @@ module ALU (
         .o_quotient(div_quo), .o_remainder(div_rem)
     );
 
-    wire quo_neg = ((funct3 == 3'b100) || (funct3 == 3'b110)) & (is_dividend_negative ^ is_divisor_negative);
-    wire rem_neg = ((funct3 == 3'b100) || (funct3 == 3'b110)) & is_dividend_negative;
-    wire [31:0] final_quo = quo_neg ? (~div_quo + 1) : div_quo;
-    wire [31:0] final_rem = rem_neg ? (~div_rem + 1) : div_rem;
+    reg [2:0] div_funct3_pipe [1:8];
+    reg div_dvd_neg_pipe [1:8];
+    reg div_div_neg_pipe [1:8];
+    reg div_by_zero_pipe [1:8];
+    reg div_ovf_pipe [1:8];
+    reg [31:0] div_a_pipe [1:8];
+    integer idx;
 
-    reg [3:0] div_counter;
     always @(posedge clk) begin
-        if (rst) div_counter <= 0;
-        else if (x_is_div) begin
-            if (div_counter < `DIVIDER_STAGES) div_counter <= div_counter + 1;
-            else div_counter <= 0;
-        end else div_counter <= 0;
+        if (rst) begin
+            for(idx=1; idx<=8; idx=idx+1) begin
+                div_funct3_pipe[idx] <= 0;
+                div_dvd_neg_pipe[idx] <= 0;
+                div_div_neg_pipe[idx] <= 0;
+                div_by_zero_pipe[idx] <= 0;
+                div_ovf_pipe[idx] <= 0;
+                div_a_pipe[idx] <= 0;
+            end
+        end else begin
+            div_funct3_pipe[1] <= funct3;
+            div_dvd_neg_pipe[1] <= is_dividend_negative;
+            div_div_neg_pipe[1] <= is_divisor_negative;
+            div_by_zero_pipe[1] <= (b == 0);
+            div_ovf_pipe[1]    <= (a == 32'h80000000 && b == 32'hFFFFFFFF);
+            div_a_pipe[1]      <= a;
+            for(idx=2; idx<=8; idx=idx+1) begin
+                div_funct3_pipe[idx] <= div_funct3_pipe[idx-1];
+                div_dvd_neg_pipe[idx] <= div_dvd_neg_pipe[idx-1];
+                div_div_neg_pipe[idx] <= div_div_neg_pipe[idx-1];
+                div_by_zero_pipe[idx] <= div_by_zero_pipe[idx-1];
+                div_ovf_pipe[idx]    <= div_ovf_pipe[idx-1];
+                div_a_pipe[idx]      <= div_a_pipe[idx-1];
+            end
+        end
     end
-    
-    always @(*) div_stall = x_is_div && (div_counter < `DIVIDER_STAGES);
+
+    wire out_quo_neg = ((div_funct3_pipe[8] == 3'b100) || (div_funct3_pipe[8] == 3'b110)) & (div_dvd_neg_pipe[8] ^ div_div_neg_pipe[8]);
+    wire out_rem_neg = ((div_funct3_pipe[8] == 3'b100) || (div_funct3_pipe[8] == 3'b110)) & div_dvd_neg_pipe[8];
+    wire [31:0] out_final_quo = out_quo_neg ? (~div_quo + 1) : div_quo;
+    wire [31:0] out_final_rem = out_rem_neg ? (~div_rem + 1) : div_rem;
+
+    always @(*) begin
+        delayed_div_result = 0;
+        case (div_funct3_pipe[8])
+            3'b100: delayed_div_result = div_by_zero_pipe[8] ? 32'hFFFFFFFF : div_ovf_pipe[8] ? 32'h80000000 : out_final_quo; 
+            3'b101: delayed_div_result = div_by_zero_pipe[8] ? 32'hFFFFFFFF : div_quo; 
+            3'b110: delayed_div_result = div_by_zero_pipe[8] ? div_a_pipe[8] : div_ovf_pipe[8] ? 32'h00000000 : out_final_rem; 
+            3'b111: delayed_div_result = div_by_zero_pipe[8] ? div_a_pipe[8] : div_rem; 
+        endcase
+    end
 
     reg [63:0] mul_res;
     always @(*) begin
@@ -190,13 +262,7 @@ module ALU (
         if (opcode == `OPC_LUI) result = b; // b is immediate
         else if (opcode == `OPC_JAL || opcode == `OPC_JALR) result = pc + 4;
         else if (x_is_div) begin
-             case (funct3)
-                3'b100: result = (b == 0) ? -1 : (a == 32'h80000000 && b == -1) ? 32'h80000000 : final_quo; 
-                3'b101: result = (b == 0) ? -1 : div_quo; 
-                3'b110: result = (b == 0) ? a : (a == 32'h80000000 && b == -1) ? 0 : final_rem; 
-                3'b111: result = (b == 0) ? a : div_rem; 
-                default: result = 0;
-             endcase
+             result = 0;
         end else if (opcode == `OPC_REG_REG && funct7 == 7'd1) begin
              case (funct3)
                  3'b000: result = a * b; 
@@ -206,15 +272,18 @@ module ALU (
                  default: result = 0;
              endcase
         end else if (opcode == `OPC_LOAD || opcode == `OPC_STORE || opcode == `OPC_AUIPC) begin
-             result = cla_sum;
+             result = cla_sum; // Sử dụng cla_sum từ module cla
         end else begin
             case (funct3)
-                3'b000: result = cla_sum; 
+                3'b000: result = cla_sum; // Sử dụng cla_sum từ module cla
                 3'b001: result = a << b[4:0]; 
                 3'b010: result = ($signed(a) < $signed(b)) ? 1 : 0; 
                 3'b011: result = (a < b) ? 1 : 0; 
                 3'b100: result = a ^ b; 
-                3'b101: result = (funct7[5]) ? ($signed(a) >>> b[4:0]) : (a >> b[4:0]);
+                3'b101: begin
+                    if (funct7[5]) result = $signed(a) >>> b[4:0];
+                    else result = a >> b[4:0];
+                end
                 3'b110: result = a | b; 
                 3'b111: result = a & b; 
             endcase
@@ -252,7 +321,7 @@ module DatapathPipelined (
 );
 
     // Hazard & Stall Wires
-    wire stall, div_stall;
+    wire stall;
     wire flush_id_ex, flush_if_id;
     
     // FETCH STAGE Wires
@@ -260,6 +329,12 @@ module DatapathPipelined (
     wire [`REG_SIZE:0] f_next_pc;
     wire x_is_branch_taken;
     wire [`REG_SIZE:0] x_target_pc;
+    
+    reg [`REG_SIZE-1:0] cycles_current;
+    always @(posedge clk) begin
+        if (rst) cycles_current <= 0;
+        else cycles_current <= cycles_current + 1;
+    end
     
     /*******************/
     /* FETCH STAGE (F) */
@@ -269,7 +344,7 @@ module DatapathPipelined (
 
     always @(posedge clk) begin
         if (rst) f_pc <= 0;
-        else if (!stall && !div_stall) f_pc <= f_next_pc;
+        else if (!stall) f_pc <= f_next_pc;
     end
 
     /******************/
@@ -282,7 +357,7 @@ module DatapathPipelined (
         if (rst || flush_if_id) begin
             d_pc <= 0;
             d_inst <= 32'h00000013; // NOP
-        end else if (!stall && !div_stall) begin
+        end else if (!stall) begin
             d_pc <= f_pc;
             d_inst <= inst_from_imem;
         end
@@ -310,23 +385,54 @@ module DatapathPipelined (
     reg [4:0] w_rd;
     wire [31:0] d_rs1_data, d_rs2_data;
 
+    wire [31:0] delayed_div_result;
+
+    reg [4:0] div_rd_pipe [1:8];
+    reg       div_valid_pipe [1:8];
+    integer pipe_idx;
+    wire x_is_div;
+    reg [4:0] x_rd;
+
+    always @(posedge clk) begin
+        if (rst) begin
+            for(pipe_idx=1; pipe_idx<=8; pipe_idx=pipe_idx+1) begin
+                div_rd_pipe[pipe_idx] <= 0;
+                div_valid_pipe[pipe_idx] <= 0;
+            end
+        end else begin
+            div_valid_pipe[1] <= x_is_div;
+            div_rd_pipe[1]    <= x_rd;
+            for(pipe_idx=2; pipe_idx<=8; pipe_idx=pipe_idx+1) begin
+                div_valid_pipe[pipe_idx] <= div_valid_pipe[pipe_idx-1];
+                div_rd_pipe[pipe_idx]    <= div_rd_pipe[pipe_idx-1];
+            end
+        end
+    end
+
     RegFile rf (
         .clk(clk), .rst(rst),
         .we(w_reg_write), .rd(w_rd), .rd_data(w_write_data),
+        .we_div(div_valid_pipe[8]), .rd_div(div_rd_pipe[8]), .rd_data_div(delayed_div_result),
         .rs1(d_rs1), .rs1_data(d_rs1_data),
         .rs2(d_rs2), .rs2_data(d_rs2_data)
     );
 
     reg x_mem_read;
-    reg [4:0] x_rd;
+    
     
     // Hazard Detection Instantiation
     Hazard_Detection hd (
         .id_rs1(d_rs1), 
         .id_rs2(d_rs2), 
+        .id_rd(d_rd),
+        .x_is_div(x_is_div),
         .ex_mem_read(x_mem_read), 
         .ex_rd(x_rd), 
         .x_is_branch_taken(x_is_branch_taken),
+        .div_rd_1(div_rd_pipe[1]), .div_rd_2(div_rd_pipe[2]), .div_rd_3(div_rd_pipe[3]), .div_rd_4(div_rd_pipe[4]),
+        .div_rd_5(div_rd_pipe[5]), .div_rd_6(div_rd_pipe[6]), .div_rd_7(div_rd_pipe[7]), .div_rd_8(div_rd_pipe[8]),
+        .div_v_1(div_valid_pipe[1]), .div_v_2(div_valid_pipe[2]), .div_v_3(div_valid_pipe[3]), .div_v_4(div_valid_pipe[4]),
+        .div_v_5(div_valid_pipe[5]), .div_v_6(div_valid_pipe[6]), .div_v_7(div_valid_pipe[7]), .div_v_8(div_valid_pipe[8]),
         .stall(stall),
         .flush_if_id(flush_if_id),
         .flush_id_ex(flush_id_ex)
@@ -341,14 +447,14 @@ module DatapathPipelined (
     reg [2:0]  x_funct3;
     reg x_reg_write, x_mem_write, x_branch, x_jump, x_halt;
     
-    wire x_is_div = (x_opcode == `OPC_REG_REG) && (x_funct7 == 7'd1) && (x_funct3[2] == 1'b1);
+    assign x_is_div = (x_opcode == `OPC_REG_REG) && (x_funct7 == 7'd1) && (x_funct3[2] == 1'b1);
 
     always @(posedge clk) begin
-        if (rst || flush_id_ex || (div_stall && !x_is_div)) begin
+        if (rst || flush_id_ex) begin
             x_pc <= 0; x_rs1_data <= 0; x_rs2_data <= 0; x_imm <= 0;
             x_rs1 <= 0; x_rs2 <= 0; x_rd <= 0; x_opcode <= 0; x_funct3 <= 0; x_funct7 <= 0;
             x_reg_write <= 0; x_mem_read <= 0; x_mem_write <= 0; x_branch <= 0; x_jump <= 0; x_halt <= 0;
-        end else if (!div_stall) begin
+        end else begin
             x_pc <= d_pc; x_rs1_data <= d_rs1_data; x_rs2_data <= d_rs2_data; x_imm <= d_imm;
             x_rs1 <= d_rs1; x_rs2 <= d_rs2; x_rd <= d_rd;
             x_opcode <= d_opcode; x_funct3 <= d_funct3; x_funct7 <= d_funct7;
@@ -385,7 +491,7 @@ module DatapathPipelined (
     ALU alu_unit (
         .clk(clk), .rst(rst), .pc(x_pc), .a(alu_in_a), .b(alu_in_b),
         .opcode(x_opcode), .funct3(x_funct3), .funct7(x_funct7),
-        .result(x_alu_res), .branch_taken(alu_branch_taken), .div_stall(div_stall)
+        .result(x_alu_res), .branch_taken(alu_branch_taken), .delayed_div_result(delayed_div_result)
     );
 
     assign x_is_branch_taken = (x_branch && alu_branch_taken) || x_jump;
@@ -400,14 +506,15 @@ module DatapathPipelined (
     reg m_mem_read, m_mem_write, m_halt;
 
     always @(posedge clk) begin
-        if (rst || div_stall) begin
+        if (rst) begin
             m_pc <= 0; m_alu_res <= 0; m_rs2_data <= 0; m_rd <= 0;
             m_opcode <= 0; m_funct3 <= 0;
             m_reg_write <= 0; m_mem_read <= 0; m_mem_write <= 0; m_halt <= 0;
         end else begin
             m_pc <= x_pc; m_alu_res <= x_alu_res; m_rs2_data <= fw_b_data; m_rd <= x_rd;
             m_opcode <= x_opcode; m_funct3 <= x_funct3;
-            m_reg_write <= x_reg_write; m_mem_read <= x_mem_read; m_mem_write <= x_mem_write; m_halt <= x_halt;
+            m_reg_write <= x_reg_write && !x_is_div;
+            m_mem_read <= x_mem_read; m_mem_write <= x_mem_write; m_halt <= x_halt;
         end
     end
 
@@ -495,10 +602,16 @@ module DatapathPipelined (
     /***********************/
     assign w_write_data = (w_opcode == `OPC_LOAD) ? w_mem_read_data : w_alu_res;
 
+    reg halt_pending;
+    always @(posedge clk) begin
+        if (rst) halt_pending <= 1'b0;
+        else if (w_halt) halt_pending <= 1'b1;
+    end
+
     always @(*) begin
         trace_writeback_pc   = w_pc;
         trace_writeback_inst = 0;
-        halt                 = w_halt;
+        halt                 = (w_halt || halt_pending) && !(x_is_div || div_valid_pipe[1] || div_valid_pipe[2] || div_valid_pipe[3] || div_valid_pipe[4] || div_valid_pipe[5] || div_valid_pipe[6] || div_valid_pipe[7] || div_valid_pipe[8]);
     end
 
 endmodule
@@ -513,8 +626,11 @@ module RegFile (
   output reg [`REG_SIZE:0] rs1_data,
   input      [        4:0] rs2,
   output reg [`REG_SIZE:0] rs2_data,
+  input      [        4:0] rd_div,
+  input      [`REG_SIZE:0] rd_data_div,
   input                    clk,
   input                    we,
+  input                    we_div,
   input                    rst
 );
   localparam NumRegs = 32;
@@ -528,12 +644,24 @@ module RegFile (
     if(rs1 == 0) begin
       rs1_data = 0; //x0
     end
+    else if (we && (rs1 == rd)) begin
+      rs1_data = rd_data;
+    end
+    else if (we_div && (rs1 == rd_div)) begin
+      rs1_data = rd_data_div;
+    end
     else begin
       rs1_data = regs[rs1];
     end
 
     if(rs2 == 0) begin
       rs2_data = 0; //x0
+    end
+    else if (we && (rs2 == rd)) begin
+      rs2_data = rd_data;
+    end
+    else if (we_div && (rs2 == rd_div)) begin
+      rs2_data = rd_data_div;
     end
     else begin
       rs2_data = regs[rs2];
@@ -548,7 +676,8 @@ module RegFile (
       end
     end
     else begin
-        regs[rd] <= rd_data;
+        if (we && rd != 0) regs[rd] <= rd_data;
+        if (we_div && rd_div != 0) regs[rd_div] <= rd_data_div;
     end
   end
 
@@ -560,9 +689,9 @@ endmodule
 module MemorySingleCycle #(
     parameter NUM_WORDS = 512
 ) (
-    input                    rst,                 // rst for both imem and dmem
-    input                    clk,                 // clock for both imem and dmem
-                                                  // The memory reads/writes on @(negedge clk)
+    input                    rst,                // rst for both imem and dmem
+    input                    clk,                // clock for both imem and dmem
+                                                 // The memory reads/writes on @(negedge clk)
     input      [`REG_SIZE:0] pc_to_imem,          // must always be aligned to a 4B boundary
     output reg [`REG_SIZE:0] inst_from_imem,      // the value at memory location pc_to_imem
     input      [`REG_SIZE:0] addr_to_dmem,        // must always be aligned to a 4B boundary
@@ -585,7 +714,7 @@ module MemorySingleCycle #(
   localparam AddrLsb = 2;
 
   always @(negedge clk) begin
-    inst_from_imem <= mem_array[{pc_to_imem[AddrMsb:AddrLsb]}];
+    inst_from_imem <= mem_array[pc_to_imem[AddrMsb:AddrLsb]];
   end
 
   always @(negedge clk) begin
@@ -602,7 +731,7 @@ module MemorySingleCycle #(
       mem_array[addr_to_dmem[AddrMsb:AddrLsb]][31:24] <= store_data_to_dmem[31:24];
     end
     // dmem is "read-first": read returns value before the write
-    load_data_from_dmem <= mem_array[{addr_to_dmem[AddrMsb:AddrLsb]}];
+    load_data_from_dmem <= mem_array[addr_to_dmem[AddrMsb:AddrLsb]];
   end
 endmodule
 
