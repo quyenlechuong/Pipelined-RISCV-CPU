@@ -1,0 +1,195 @@
+Time resolution is 1 ps
+WARNING: File mem_initial_contents.hex referenced on C:/Users/lechuongquyen/Processor/Processor.srcs/sources_1/new/DividerUnsignedPipelined.v at line 27 cannot be opened for reading. Please ensure that this file is available in the current working directory or parent directory of xsim.dir location specified via -xsimdir switch.
+/*************************************************/
+/* STARTING COMPREHENSIVE TEST BENCH (PIPELINED) */
+/*************************************************/
+
+/*****************************************/
+/* PROGRAM 1: I-TYPE ARITHMETIC & SHIFTS */
+/*****************************************/
+[ASSEMBLY TRACE]
+ 0: ADDI  x1, x0, -1
+ 1: SLLI  x2, x1, 4
+ 2: SRLI  x3, x1, 4
+ 3: SRAI  x4, x1, 4
+ 4: XORI  x5, x1, 1
+ 5: ORI   x6, x0, 255
+ 6: ANDI  x7, x6, 15
+ 7: SLTI  x8, x1, 0
+ 8: SLTIU x9, x1, 0
+ 9: ecall
+[PASS]      ADDI : x1 = ffffffff (Expected ffffffff)
+[PASS]      SLLI : x2 = fffffff0 (Expected fffffff0)
+[PASS]      SRLI : x3 = 0fffffff (Expected 0fffffff)
+[PASS]      SRAI : x4 = ffffffff (Expected ffffffff)
+[PASS]      XORI : x5 = fffffffe (Expected fffffffe)
+[PASS]      ORI  : x6 = 000000ff (Expected 000000ff)
+[PASS]      ANDI : x7 = 0000000f (Expected 0000000f)
+[PASS]      SLTI : x8 = 1 (Expected 1)
+[PASS]      SLTIU: x9 = 0 (Expected 0)
+
+/******************************************/
+/* PROGRAM 2: R-TYPE ARITHMETIC & LOGIC   */
+/******************************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 10
+ 1: ADDI x2, x0, 3
+ 2: ADDI x3, x0, -5
+ 3: ADD  x4, x1, x2
+ 4: SUB  x5, x1, x2
+ 5: SLL  x6, x1, x2
+ 6: SLT  x7, x3, x1
+ 7: SLTU x8, x3, x1
+ 8: XOR  x9, x1, x2
+ 9: SRL  x10, x3, x2
+10: SRA  x11, x3, x2
+11: OR   x12, x1, x2
+12: AND  x13, x1, x2
+13: ecall
+[PASS]      ADD  : x4 = 13 (Expected 13)
+[PASS]      SUB  : x5 = 7 (Expected 7)
+[PASS]      SLL  : x6 = 80 (Expected 80)
+[PASS]      SLT  : x7 = 1 (Expected 1)
+[PASS]      SLTU : x8 = 0 (Expected 0)
+[PASS]      XOR  : x9 = 9 (Expected 9)
+[PASS]      SRL  : x10 = 1fffffff (Expected 1fffffff)
+[PASS]      SRA  : x11 = ffffffff (Expected ffffffff)
+[PASS]      OR   : x12 = 11 (Expected 11)
+[PASS]      AND  : x13 = 2 (Expected 2)
+
+/**************************************/
+/* PROGRAM 3: BRANCHES, JUMPS & LUI   */
+/**************************************/
+[ASSEMBLY TRACE]
+ 0: LUI  x1, 0x12345
+ 1: ADDI x2, x0, 10
+ 2: ADDI x3, x0, 20
+ 3: BEQ  x2, x3, FAIL
+ 4: BNE  x2, x3, NEXT
+ 5: BLT  x2, x3, NEXT
+ 6: FAIL: ADDI x4, x0, -85
+ 7: BGE  x3, x2, NEXT
+ 8: FAIL: ADDI x4, x0, -85
+ 9: BLTU x2, x3, NEXT
+10: FAIL: ADDI x4, x0, -85
+11: BGEU x3, x2, NEXT
+12: FAIL: ADDI x4, x0, -85
+13: JAL  x5, SKIP
+14: NOP
+15: SKIP: ADDI x6, x0, 4
+16: ADDI x4, x0, 1
+17: ecall
+[PASS]      LUI  : x1 = 12345000 (Expected 12345000)
+[PASS]     Branch: x4 = 1 (Expected 1)
+
+/**********************************/
+/* PROGRAM 4: MEMORY WIDTHS       */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 100
+ 1: LUI  x2, 0xDEADC
+ 2: ADDI x2, x2, 0xEEF
+ 3: SW   x2, 0(x1)
+ 4: SB   x2, 4(x1)
+ 5: SH   x2, 8(x1)
+ 6: LW   x3, 0(x1)
+ 7: LB   x4, 0(x1)
+ 8: LBU  x5, 0(x1)
+ 9: LH   x6, 0(x1)
+10: LHU  x7, 0(x1)
+11: ecall
+[PASS]      SW/LW: x3 = deadbeef (Expected deadbeef)
+[PASS]      LB   : x4 = ffffffef (Expected ffffffef)
+[PASS]      LBU  : x5 = 000000ef (Expected 000000ef)
+[PASS]      LH   : x6 = ffffbeef (Expected ffffbeef)
+[PASS]      LHU  : x7 = 0000beef (Expected 0000beef)
+
+/**********************************/
+/* PROGRAM 5: M-EXTENSION SUITE   */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 20
+ 1: ADDI x2, x0, -5
+ 2: ADDI x3, x0, 30
+ 3: MUL  x4, x1, x2
+ 4: MULH x5, x1, x2
+ 5: DIV  x6, x1, x2
+ 6: REM  x7, x1, x2
+ 7: DIVU x8, x3, x1
+ 8: REMU x9, x3, x1
+ 9: ecall
+[PASS]      MUL  : x4 = -100 (Expected -100)
+[PASS]      MULH : x5 = -1 (Expected -1)
+[PASS]      DIV  : x6 = -4 (Expected -4)
+[PASS]      REM  : x7 = 0 (Expected 0)
+[PASS]      DIVU : x8 = 0 (Expected 0)
+[PASS]      REMU : x9 = 20 (Expected 20)
+
+/**********************************/
+/* PROGRAM 6: LOAD-TO-USE HAZARD  */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 100
+ 1: ADDI x2, x0, 55
+ 2: SW   x2, 0(x1)
+ 3: LW   x3, 0(x1)
+ 4: ADD  x4, x3, x3
+ 5: ecall
+[PASS]    L2U_ADD: x4 = 110 (Expected 110)
+
+/**********************************/
+/* PROGRAM 7: ADVANCED FORWARDING */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 5
+ 1: ADD  x2, x1, x1
+ 2: NOP
+ 3: ADD  x3, x2, x2
+ 4: NOP
+ 5: NOP
+ 6: ADD  x4, x3, x3
+ 7: ecall
+[PASS]    FWD_EX : x2 = 10 (Expected 10)
+[PASS]    FWD_MEM: x3 = 20 (Expected 20)
+[PASS]    FWD_WB : x4 = 40 (Expected 40)
+
+/**********************************/
+/* PROGRAM 8: AUIPC & JALR HAZARD */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: AUIPC x1, 0
+ 1: JALR  x2, 12(x1)
+ 2: ADDI  x3, x0, 99
+ 3: ADDI  x4, x0, 42
+ 4: ecall
+[PASS]    JALR_RA: x2 = 8 (Expected 8)
+[PASS]    FLUSH  : x3 = 0 (Expected 0)
+[PASS]    TARGET : x4 = 42 (Expected 42)
+
+/**********************************/
+/* PROGRAM 9: ZERO REGISTER LOCK  */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x0, x0, 100
+ 1: ADD  x1, x0, x0
+ 2: ecall
+[PASS]    ZERO_X1: x1 = 0 (Expected 0)
+
+/**********************************/
+/* PROGRAM 10: LOAD-TO-BRANCH     */
+/**********************************/
+[ASSEMBLY TRACE]
+ 0: ADDI x1, x0, 100
+ 1: ADDI x2, x0, 10
+ 2: SW   x2, 0(x1)
+ 3: LW   x3, 0(x1)
+ 4: BEQ  x3, x2, 8
+ 5: ADDI x4, x0, 99
+ 6: ADDI x4, x0, 1
+ 7: ecall
+[PASS]    L2B_TGT: x4 = 1 (Expected 1)
+
+/**************************************************/
+/* ALL TESTS PASSED SUCCESSFULLY!                 */
+/**************************************************/
+$finish called at time : 1686 ns : File "C:/Users/lechuongquyen/Processor/Processor.srcs/sim_1/new/tb.v" Line 485
