@@ -91,11 +91,12 @@ module Hazard_Detection (
     always @(*) begin
         stall = 1'b0;
 
-        // 1. Load-Use Hazard Detection
+        // 1. Load-Use Hazard
         if (ex_mem_read && (ex_rd != 0) && ((ex_rd == id_rs1) || (ex_rd == id_rs2))) begin
             stall = 1'b1;
         end
 
+        // 2. Divider Hazard
         if (id_rs1 != 0 && (
             (x_is_div && ex_rd == id_rs1) ||
             (div_v_1 && div_rd_1 == id_rs1) || (div_v_2 && div_rd_2 == id_rs1) ||
@@ -120,7 +121,7 @@ module Hazard_Detection (
             (div_v_7 && div_rd_7 == id_rd) || (div_v_8 && div_rd_8 == id_rd)
         )) stall = 1'b1;
 
-        // 2. Control Hazard (Flush) Resolution
+        // 3. Control Hazard
         flush_if_id = x_is_branch_taken;
         flush_id_ex = stall || x_is_branch_taken;
     end
@@ -139,7 +140,11 @@ module Forwarding_Unit (
     output reg [1:0] forward_a,
     output reg [1:0] forward_b
 );
-    
+
+    // Forwarding Codes:
+    // 00: No forward
+    // 10: Forward from MEM to EX
+    // 01: Forward from WB to EX
     always @(*) begin
         forward_a = 2'b00;
         if (mem_reg_write && (mem_rd != 0) && (mem_rd == ex_rs1))
@@ -637,6 +642,8 @@ module RegFile (
   // TODO: your code here
 
   // read
+
+  // When rs1 or rs2 at ID stage is the same as rd at WB stage, forward rd to rs1 or rs2 read data
   always @(*) begin
     if(rs1 == 0) begin
       rs1_data = 0; //x0
