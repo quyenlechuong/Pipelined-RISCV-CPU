@@ -269,10 +269,10 @@ module ALU (
                  default: result = 0;
              endcase
         end else if (opcode == `OPC_LOAD || opcode == `OPC_STORE || opcode == `OPC_AUIPC) begin
-             result = cla_sum; // Sử dụng cla_sum từ module cla
+             result = cla_sum;
         end else begin
             case (funct3)
-                3'b000: result = cla_sum; // Sử dụng cla_sum từ module cla
+                3'b000: result = cla_sum;
                 3'b001: result = a << b[4:0]; 
                 3'b010: result = ($signed(a) < $signed(b)) ? 1 : 0; 
                 3'b011: result = (a < b) ? 1 : 0; 
