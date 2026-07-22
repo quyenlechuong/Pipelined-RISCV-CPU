@@ -139,10 +139,7 @@ module Forwarding_Unit (
     output reg [1:0] forward_a,
     output reg [1:0] forward_b
 );
-    // Forwarding Codes:
-    // 00: No forward (from ID/EX)
-    // 10: Forward from EX/MEM (Prioritize closest)
-    // 01: Forward from MEM/WB
+    
     always @(*) begin
         forward_a = 2'b00;
         if (mem_reg_write && (mem_rd != 0) && (mem_rd == ex_rs1))
